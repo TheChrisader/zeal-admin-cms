@@ -50,16 +50,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const login = async (credentials: { email: string; password: string }) => {
-    const response: any = await fetch(
-      "http://localhost:3000/api/v1/admin/auth/signin",
-      {
-        method: "POST",
-        body: JSON.stringify(credentials),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response: any = await apiClient(`/api/v1/admin/auth/signin`, {
+      method: "POST",
+      body: JSON.stringify(credentials),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     const data = await response.json();
     if (!response.ok) {
       throw new Error(data.message || "Login failed");
