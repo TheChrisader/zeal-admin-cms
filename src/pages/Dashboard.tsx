@@ -170,7 +170,7 @@ const DashboardPage = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-        <Select defaultValue={timeRange} onValueChange={setTimeRange}>
+        {/* <Select defaultValue={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-36">
             <SelectValue />
           </SelectTrigger>
@@ -180,7 +180,7 @@ const DashboardPage = () => {
             <SelectItem value="30d">Last 30 days</SelectItem>
             <SelectItem value="90d">Last 90 days</SelectItem>
           </SelectContent>
-        </Select>
+        </Select> */}
       </div>
 
       {/* Stats Overview */}
