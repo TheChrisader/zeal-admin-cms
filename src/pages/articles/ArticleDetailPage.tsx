@@ -62,11 +62,10 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import { CATEGORIES } from "@/constants/categories";
-import { formatHTML } from "@/lib/html-formatter";
-import { stripExtraWhitespace } from "@/utils/stripExtraWhitespace";
 import RichTextEditor from "@/components/custom/editor";
 import { toast } from "sonner";
 import ImageUploadPreview from "@/components/custom/ImageUploadPreview";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const fetchPost = async (id: string): Promise<any> => {
   const response = await apiClient(`/api/v1/admin/bulk/posts/${id}`);
@@ -104,6 +103,16 @@ const ArticleDetailPage = () => {
       setUnsavedChanges(article);
     }
   }, [article, unsavedChanges]);
+
+  const isTopFeature = React.useMemo(() => {
+    if (!article?.top_feature) {
+      return false;
+    }
+    const topFeatureDate = new Date(article.top_feature);
+    const now = new Date();
+    const twoHours = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+    return now.getTime() - topFeatureDate.getTime() < twoHours;
+  }, [article?.top_feature]);
 
   // Mutations
   const updateMutation = useMutation({
@@ -532,6 +541,31 @@ const ArticleDetailPage = () => {
                         onKeyDown={handleAddTag}
                         placeholder="Add a tag and press Enter"
                       />
+                    </div>
+                    <div className="flex items-center space-x-4 p-4 border rounded-lg bg-muted/50">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="topFeature"
+                          checked={unsavedChanges?.top_feature ?? isTopFeature}
+                          onCheckedChange={(checked) => {
+                            setUnsavedChanges({
+                              ...unsavedChanges,
+                              top_feature: checked,
+                            });
+                          }}
+                        />
+                        <div className="grid gap-1.5 leading-none">
+                          <label
+                            htmlFor="topFeature"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Feature this article
+                          </label>
+                          <p className="text-sm text-muted-foreground">
+                            Featured articles will be highlighted for 2 hours
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
