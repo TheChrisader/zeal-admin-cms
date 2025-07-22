@@ -143,7 +143,7 @@ const App = () => {
                 <Route
                   path="articles"
                   element={
-                    <ProtectedRoute requiredPermission="articles:read">
+                    <ProtectedRoute requiredPermission="posts:read">
                       <ArticlesListPage />
                     </ProtectedRoute>
                   }
@@ -152,7 +152,7 @@ const App = () => {
                 <Route
                   path="articles/new"
                   element={
-                    <ProtectedRoute requiredPermission="articles:write">
+                    <ProtectedRoute requiredPermission="posts:write">
                       <ArticleCreationPage />
                     </ProtectedRoute>
                   }
@@ -161,7 +161,7 @@ const App = () => {
                 <Route
                   path="articles/:id"
                   element={
-                    <ProtectedRoute requiredPermission="articles:read">
+                    <ProtectedRoute requiredPermission="posts:read">
                       <ArticleViewPage />
                     </ProtectedRoute>
                   }
@@ -170,7 +170,7 @@ const App = () => {
                 <Route
                   path="articles/:id/edit"
                   element={
-                    <ProtectedRoute requiredPermission="articles:write">
+                    <ProtectedRoute requiredPermission="posts:write">
                       <ArticleDetailPage />
                     </ProtectedRoute>
                   }
@@ -206,7 +206,7 @@ const App = () => {
                 <Route
                   path="flagged-content"
                   element={
-                    <ProtectedRoute requiredPermission="articles:read">
+                    <ProtectedRoute requiredPermission="posts:read">
                       <FlaggedContentPage />
                     </ProtectedRoute>
                   }
