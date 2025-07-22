@@ -76,7 +76,7 @@ const fetchPost = async (id: string): Promise<any> => {
 
   // const data = await response.json();
 
-  return response;
+  return response.data;
 };
 
 const ArticleDetailPage = () => {
@@ -96,6 +96,7 @@ const ArticleDetailPage = () => {
     queryKey: ["article", id],
     queryFn: () => fetchPost(id as string),
   });
+  console.log(article);
 
   // Initialize unsaved changes when article data is loaded
   React.useEffect(() => {
