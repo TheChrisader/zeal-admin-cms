@@ -80,7 +80,7 @@ const ArticleCreationPage = () => {
 
   const fetchArticleData = async (url: string) => {
     setIsLoading({ ...isLoading, autoFill: true });
-    const response = await apiClient(`/api/v1/post/parse`, {
+    const article = await apiClient(`/api/v1/post/parse`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -88,7 +88,7 @@ const ArticleCreationPage = () => {
       body: JSON.stringify({ url }),
     });
 
-    const article = await response.json();
+    // const article = await response.json();
 
     setIsLoading({ ...isLoading, autoFill: false });
 
@@ -277,7 +277,7 @@ const ArticleCreationPage = () => {
       if (formData.image) {
         articleFormData.append("image", formData.image);
       }
-      const response = await apiClient("/api/v1/admin/post", {
+      const id = await apiClient("/api/v1/admin/post", {
         method: "POST",
         // headers: {
         //   "Content-Type": "multipart/form-data",
@@ -285,7 +285,7 @@ const ArticleCreationPage = () => {
         body: articleFormData,
       });
 
-      const id = await response.json();
+      // const id = await response.json();
       navigate(`/articles/${id}`);
     } catch (error) {
       setError("Error creating article");

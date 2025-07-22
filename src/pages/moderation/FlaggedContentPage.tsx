@@ -66,12 +66,12 @@ const ContentModerationQueue = () => {
     queryFn: async () => {
       try {
         const response = await apiClient(`/api/v1/admin/flagged`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log(data);
-        return data;
+        // if (!response.ok) {
+        //   throw new Error(`HTTP error! status: ${response.status}`);
+        // }
+        // const data = await response.json();
+        // console.log(data);
+        return response;
       } catch (error) {
         console.log(error);
         return [];

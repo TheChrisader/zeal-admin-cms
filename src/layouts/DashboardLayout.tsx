@@ -50,6 +50,12 @@ const DashboardLayout = () => {
       permission: "posts:read",
     },
     {
+      name: "Freelance",
+      icon: Bell,
+      href: "/moderation/freelance/posts",
+      permission: "freelance_post:read",
+    },
+    {
       name: "Users",
       icon: Users,
       href: "/users",

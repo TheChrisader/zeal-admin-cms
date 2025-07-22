@@ -17,6 +17,9 @@ import { Toaster } from "sonner";
 import useLocalStorage from "./hooks/useLocalStorage";
 import { apiClient } from "./lib/apiClient";
 import ArticleViewPage from "./pages/articles/ArticleViewPage";
+import FreelanceArticlesListPage from "./pages/freelance/FreelanceArticlesListPage";
+import FreelanceArticleDetailPage from "./pages/freelance/FreelanceArticleDetailPage";
+import FreelanceArticleViewPage from "./pages/freelance/FreelanceArticleViewPage";
 
 const AuthContext = React.createContext<null | {
   user: any;
@@ -41,8 +44,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await apiClient("/api/v1/admin/auth/session");
-      const session = await response.json();
+      const session = await apiClient("/api/v1/admin/auth/session");
+      // const session = await response.json();
       setUser(session);
     } catch (error) {
       console.error("Error checking auth status:", error);
@@ -57,13 +60,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         "Content-Type": "application/json",
       },
     });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
-    }
-    setUser(data.user);
-    setToken(data.token);
-    return data;
+    // const response = await response.json();
+    // if (!response.ok) {
+    //   throw new Error(data.message || "Login failed");
+    // }
+    setUser(response.user);
+    setToken(response.token);
+    return response;
   };
 
   const logout = async () => {
@@ -101,9 +104,9 @@ const ProtectedRoute = ({
     checkAuth();
   }, []);
 
-  // if (requiredPermission && !hasPermission(requiredPermission)) {
-  //   return <Navigate to="/unauthorized" replace />;
-  // }
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 };
@@ -140,7 +143,7 @@ const App = () => {
                 <Route
                   path="articles"
                   element={
-                    <ProtectedRoute requiredPermission="articles.read">
+                    <ProtectedRoute requiredPermission="articles:read">
                       <ArticlesListPage />
                     </ProtectedRoute>
                   }
@@ -149,7 +152,7 @@ const App = () => {
                 <Route
                   path="articles/new"
                   element={
-                    <ProtectedRoute requiredPermission="articles.read">
+                    <ProtectedRoute requiredPermission="articles:write">
                       <ArticleCreationPage />
                     </ProtectedRoute>
                   }
@@ -158,7 +161,7 @@ const App = () => {
                 <Route
                   path="articles/:id"
                   element={
-                    <ProtectedRoute requiredPermission="articles.read">
+                    <ProtectedRoute requiredPermission="articles:read">
                       <ArticleViewPage />
                     </ProtectedRoute>
                   }
@@ -167,7 +170,7 @@ const App = () => {
                 <Route
                   path="articles/:id/edit"
                   element={
-                    <ProtectedRoute requiredPermission="articles.read">
+                    <ProtectedRoute requiredPermission="articles:write">
                       <ArticleDetailPage />
                     </ProtectedRoute>
                   }
@@ -176,7 +179,7 @@ const App = () => {
                 <Route
                   path="users"
                   element={
-                    <ProtectedRoute requiredPermission="users.read">
+                    <ProtectedRoute requiredPermission="users:read">
                       <UsersListPage />
                     </ProtectedRoute>
                   }
@@ -194,7 +197,7 @@ const App = () => {
                 <Route
                   path="moderators"
                   element={
-                    <ProtectedRoute requiredPermission="admin.all">
+                    <ProtectedRoute requiredPermission="admin:all">
                       <ModeratorManagementPage />
                     </ProtectedRoute>
                   }
@@ -203,7 +206,7 @@ const App = () => {
                 <Route
                   path="flagged-content"
                   element={
-                    <ProtectedRoute requiredPermission="articles.read">
+                    <ProtectedRoute requiredPermission="articles:read">
                       <FlaggedContentPage />
                     </ProtectedRoute>
                   }
@@ -212,11 +215,38 @@ const App = () => {
                 <Route
                   path="settings"
                   element={
-                    <ProtectedRoute requiredPermission="articles.read">
+                    <ProtectedRoute requiredPermission="settings:write">
                       <SystemSettingsPage />
                     </ProtectedRoute>
                   }
                 />
+
+                <Route
+                  path="moderation/freelance/posts"
+                  element={
+                    <ProtectedRoute requiredPermission="freelance_post:read">
+                      <FreelanceArticlesListPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="moderation/freelance/posts/:id"
+                  element={
+                    <ProtectedRoute requiredPermission="freelance_post:write">
+                      <FreelanceArticleDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* <Route
+                  path="moderation/freelance/posts/:id/edit"
+                  element={
+                    <ProtectedRoute requiredPermission="articles.read">
+                      <FreelanceArticleDetailPage />
+                    </ProtectedRoute>
+                  }
+                /> */}
               </Route>
             </Routes>
           </BrowserRouter>

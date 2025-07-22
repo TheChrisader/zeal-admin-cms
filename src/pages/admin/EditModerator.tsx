@@ -40,6 +40,8 @@ const permissions: Permission[] = [
   { value: "comments:write", label: "Write Comments" },
   { value: "users:read", label: "Read Users" },
   { value: "users:write", label: "Write Users" },
+  { value: "freelance_post:read", label: "Read Freelance Post" },
+  { value: "freelance_post:write", label: "Write Freelance Post" },
   { value: "settings:read", label: "Read Settings" },
   { value: "settings:write", label: "Write Settings" },
   { value: "moderator:read", label: "Read Moderator" },
@@ -149,7 +151,7 @@ function EditModerator({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <Popover open={openPopover} onOpenChange={setOpenPopover}>
+          <Popover open={openPopover} onOpenChange={setOpenPopover} modal>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"

@@ -62,8 +62,8 @@ const fetchUsers = async (params: any) => {
   const response = await apiClient(
     `/api/v1/admin/bulk/users?${searchParams.toString()}`
   );
-  const data = await response.json();
-  return data.data;
+  // const data = await response.json();
+  return response.data;
 };
 
 export default function UsersPage() {

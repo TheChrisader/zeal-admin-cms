@@ -64,7 +64,7 @@ const createExtensions = (placeholder: string) => [
 
         // const src = await fileToBase64(file)
 
-        const response = await apiClient(
+        const { src } = await apiClient(
           `/api/v1/admin/bulk/posts/upload/image`,
           {
             method: "POST",
@@ -72,7 +72,7 @@ const createExtensions = (placeholder: string) => [
           }
         );
 
-        const { src } = await response.json();
+        // const { src } = await response.json();
 
         // either return { id: string | number, src: string } or just src
         // return src;

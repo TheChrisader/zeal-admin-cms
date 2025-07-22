@@ -8,13 +8,13 @@ import { useNavigate, useParams } from "react-router-dom";
 const fetchPost = async (id: string): Promise<any> => {
   const response = await apiClient(`/api/v1/admin/bulk/posts/${id}`);
 
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
+  // if (!response.ok) {
+  //   throw new Error("Network response was not ok");
+  // }
 
-  const data = await response.json();
+  // const data = await response.json();
 
-  return data.data;
+  return response.data;
 };
 
 // const broadcastPost = async (id: string) => {
@@ -54,14 +54,14 @@ const ArticleViewPage = () => {
 
   const broadcastPost = async (id: string) => {
     setIsLoadingBroadcast(true);
-    const response = await apiClient(`/api/v1/admin/notifications/broadcast`, {
+    await apiClient(`/api/v1/admin/notifications/broadcast`, {
       method: "POST",
       body: JSON.stringify({ postId: id }),
     });
 
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
+    // if (!response.ok) {
+    //   throw new Error("Network response was not ok");
+    // }
 
     setIsLoadingBroadcast(false);
   };

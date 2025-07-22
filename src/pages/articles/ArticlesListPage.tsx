@@ -114,10 +114,10 @@ const fetchPosts = async (
   const response = await apiClient(
     `/api/v1/admin/bulk/posts?${searchParams.toString()}`
   );
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  const data = (await response.json()).data;
+  // if (!response.ok) {
+  //   throw new Error("Network response was not ok");
+  // }
+  const data = response.data;
   const { posts, pagination } = data;
   return { posts, pagination };
 };

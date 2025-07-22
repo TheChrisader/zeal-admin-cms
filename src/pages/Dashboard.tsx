@@ -88,10 +88,8 @@ const DashboardPage = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await apiClient(
-          `/api/v1/admin?timeRange=${timeRange}`
-        );
-        const data = await response.json();
+        const data = await apiClient(`/api/v1/admin?timeRange=${timeRange}`);
+        // const data = await response.json();
         const graphData = [];
         for (let i = 0; i < data.intervals.length; i++) {
           graphData.push({

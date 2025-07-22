@@ -38,11 +38,11 @@ interface WriterRequestsProps {
 const fetchRequests = async () => {
   try {
     const response = await apiClient(`/api/v1/admin/writer-request`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data;
+    // if (!response.ok) {
+    //   throw new Error(`HTTP error! status: ${response.status}`);
+    // }
+    // const data = await response.json();
+    return response;
   } catch (error) {
     throw new Error(
       error instanceof Error ? error.message : "Failed to fetch requests"

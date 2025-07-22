@@ -34,11 +34,11 @@ type ModeratorFormData = Omit<Moderator, "_id"> & { password: string };
 const fetchModerators = async (): Promise<Moderator[]> => {
   try {
     const response = await apiClient("/api/v1/admin/moderator");
-    if (!response.ok) {
-      throw new Error("Failed to fetch moderators");
-    }
-    const data = await response.json();
-    return data;
+    // if (!response.ok) {
+    //   throw new Error("Failed to fetch moderators");
+    // }
+    // const data = await response.json();
+    return response;
   } catch (error) {
     console.error("Error fetching moderators:", error);
     return [];
@@ -50,7 +50,7 @@ const createModerator = async (data: ModeratorFormData): Promise<Moderator> => {
     method: "POST",
     body: JSON.stringify(data),
   });
-  return response.json();
+  return response;
 };
 
 const editModerator = async ({
@@ -64,7 +64,7 @@ const editModerator = async ({
     method: "PUT",
     body: JSON.stringify({ permissions }),
   });
-  return response.json();
+  return response;
 };
 
 const ModeratorManagement = () => {

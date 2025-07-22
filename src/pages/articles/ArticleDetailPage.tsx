@@ -70,13 +70,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 const fetchPost = async (id: string): Promise<any> => {
   const response = await apiClient(`/api/v1/admin/bulk/posts/${id}`);
 
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
+  // if (!response.ok) {
+  //   throw new Error("Network response was not ok");
+  // }
 
-  const data = await response.json();
+  // const data = await response.json();
 
-  return data.data;
+  return response;
 };
 
 const ArticleDetailPage = () => {
@@ -159,11 +159,11 @@ const ArticleDetailPage = () => {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update article");
-      }
+      // if (!response.ok) {
+      //   throw new Error("Failed to update article");
+      // }
 
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["article", id] });

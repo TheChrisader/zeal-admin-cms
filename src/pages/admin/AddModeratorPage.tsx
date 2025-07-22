@@ -28,6 +28,8 @@ type RBACPrivilege =
   | "comments:write"
   | "users:read"
   | "users:write"
+  | "freelance_post:read"
+  | "freelance_post:write"
   | "settings:read"
   | "settings:write"
   | "moderator:read"
@@ -58,6 +60,8 @@ const allPrivileges: RBACPrivilege[] = [
   "comments:write",
   "users:read",
   "users:write",
+  "freelance_post:read",
+  "freelance_post:write",
   "settings:read",
   "settings:write",
   "moderator:read",
