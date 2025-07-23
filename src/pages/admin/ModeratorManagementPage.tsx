@@ -271,6 +271,15 @@ const ModeratorManagement = () => {
                     )}
                     {moderator.permissions.find(
                       (privilege) =>
+                        privilege.includes("freelance") ||
+                        privilege.includes("admin")
+                    ) && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        Manage Freelancers
+                      </span>
+                    )}
+                    {moderator.permissions.find(
+                      (privilege) =>
                         privilege.includes("moderator") ||
                         privilege.includes("admin")
                     ) && (

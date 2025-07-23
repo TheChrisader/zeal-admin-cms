@@ -19,11 +19,14 @@ import { apiClient } from "./lib/apiClient";
 import ArticleViewPage from "./pages/articles/ArticleViewPage";
 import FreelanceArticlesListPage from "./pages/freelance/FreelanceArticlesListPage";
 import FreelanceArticleDetailPage from "./pages/freelance/FreelanceArticleDetailPage";
-import FreelanceArticleViewPage from "./pages/freelance/FreelanceArticleViewPage";
+import LoadingScreen from "./layouts/LoadingScreen";
+import UnauthorizedPage from "./pages/Unauthorized";
+// import FreelanceArticleViewPage from "./pages/freelance/FreelanceArticleViewPage";
 
 const AuthContext = React.createContext<null | {
   user: any;
   token: string | null;
+  isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<any>;
   logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
@@ -40,42 +43,50 @@ export const useAuth = () => {
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [token, setToken] = useLocalStorage("token", null);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
+      setIsLoading(true);
       const session = await apiClient("/api/v1/admin/auth/session");
       // const session = await response.json();
       setUser(session);
     } catch (error) {
       console.error("Error checking auth status:", error);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
 
-  const login = async (credentials: { email: string; password: string }) => {
-    const response: any = await apiClient(`/api/v1/admin/auth/signin`, {
-      method: "POST",
-      body: JSON.stringify(credentials),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    // const response = await response.json();
-    // if (!response.ok) {
-    //   throw new Error(data.message || "Login failed");
-    // }
-    setUser(response.user);
-    setToken(response.token);
-    return response;
-  };
+  const login = useCallback(
+    async (credentials: { email: string; password: string }) => {
+      const response: any = await apiClient(`/api/v1/admin/auth/signin`, {
+        method: "POST",
+        body: JSON.stringify(credentials),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      // const response = await response.json();
+      // if (!response.ok) {
+      //   throw new Error(data.message || "Login failed");
+      // }
+      setUser(response.user);
+      setToken(response.token);
+      return response;
+    },
+    [setToken]
+  );
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("token");
-  };
+  }, [setToken]);
 
   const hasPermission = (permission: string) => {
+    // console.log(user?.permissions, "!!!!!!!!!!!!!!");
     return (
       user?.permissions?.includes(permission) ||
       user?.permissions?.includes("admin:all")
@@ -84,7 +95,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, token, hasPermission, checkAuth }}
+      value={{
+        user,
+        isLoading,
+        login,
+        logout,
+        token,
+        hasPermission,
+        checkAuth,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -98,14 +117,22 @@ const ProtectedRoute = ({
   children: React.ReactNode;
   requiredPermission?: string;
 }) => {
-  const { hasPermission, checkAuth } = useAuth();
+  const { hasPermission, user, checkAuth, isLoading } = useAuth();
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    if (!user) checkAuth();
+  }, [checkAuth, user]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (requiredPermission && !hasPermission(requiredPermission)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children;
@@ -128,6 +155,14 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/unauthorized"
+                element={
+                  <ProtectedRoute>
+                    <UnauthorizedPage />
+                  </ProtectedRoute>
+                }
+              />
 
               <Route
                 path="/"

@@ -22,7 +22,7 @@ export async function apiClient<T = any>(
   const token = localStorage.getItem("token");
 
   const defaultHeaders: HeadersInit = {
-    "Content-Type": "application/json",
+    // "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
@@ -36,7 +36,7 @@ export async function apiClient<T = any>(
 
   if (response.status === 401) {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    // window.location.href = "/login";
     // Throw an error to stop further execution in the calling function
     throw new ApiError(response.status, response.statusText, {
       message: "Unauthorized",
