@@ -266,15 +266,15 @@ const App = () => {
                   }
                 />
 
-                                <Route
-                  path="moderation/freelance/posts/:id/edit"
+                <Route
+                  path="moderation/freelance/posts/:id"
                   element={
                     <ProtectedRoute requiredPermission="articles.read">
                       <FreelanceArticleDetailPage />
                     </ProtectedRoute>
                   }
                 />
-                
+
                 <Route
                   path="daily-articles"
                   element={
