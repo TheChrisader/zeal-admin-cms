@@ -80,6 +80,12 @@ const DashboardLayout = () => {
       href: "/settings",
       permission: "admin:all",
     },
+    {
+      name: "Daily Articles",
+      icon: FileText,
+      href: "/daily-articles",
+      permission: "posts:read",
+    },
   ];
 
   const handleLogout = async () => {
@@ -101,7 +107,9 @@ const DashboardLayout = () => {
       <ScrollArea className="flex-1 px-2">
         <div className="space-y-2 py-2">
           {navigation.map((item) => {
+            console.log("render count");
             if (item.permission && !hasPermission(item.permission)) return null;
+            console.log("bypass count");
 
             const isActive = location.pathname === item.href;
             const Icon = item.icon;

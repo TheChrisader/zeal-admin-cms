@@ -22,6 +22,7 @@ import FreelanceArticleDetailPage from "./pages/freelance/FreelanceArticleDetail
 import LoadingScreen from "./layouts/LoadingScreen";
 import UnauthorizedPage from "./pages/Unauthorized";
 // import FreelanceArticleViewPage from "./pages/freelance/FreelanceArticleViewPage";
+import DailyArticlesPage from "./pages/articles/DailyArticlesPage";
 
 const AuthContext = React.createContext<null | {
   user: any;
@@ -265,11 +266,20 @@ const App = () => {
                   }
                 />
 
-                <Route
-                  path="moderation/freelance/posts/:id"
+                                <Route
+                  path="moderation/freelance/posts/:id/edit"
                   element={
-                    <ProtectedRoute requiredPermission="freelance_post:write">
+                    <ProtectedRoute requiredPermission="articles.read">
                       <FreelanceArticleDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route
+                  path="daily-articles"
+                  element={
+                    <ProtectedRoute requiredPermission="posts:read">
+                      <DailyArticlesPage />
                     </ProtectedRoute>
                   }
                 />

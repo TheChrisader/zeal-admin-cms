@@ -7,11 +7,15 @@ function useLocalStorage(key: string, initialValue: any) {
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse and return item or return initialValue
-      return item
-        ? typeof item === "string"
-          ? item
-          : JSON.parse(item)
-        : initialValue;
+      if (item) {
+        try {
+          return JSON.parse(item);
+        } catch {
+          return item;
+        }
+      } else {
+        return initialValue;
+      }
     } catch (error) {
       console.error("Error reading localStorage key:", key, error);
       return initialValue;
