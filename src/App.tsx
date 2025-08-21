@@ -269,7 +269,7 @@ const App = () => {
                 <Route
                   path="moderation/freelance/posts/:id"
                   element={
-                    <ProtectedRoute requiredPermission="articles.read">
+                    <ProtectedRoute requiredPermission="freelance_post:write">
                       <FreelanceArticleDetailPage />
                     </ProtectedRoute>
                   }
@@ -283,15 +283,6 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
-
-                {/* <Route
-                  path="moderation/freelance/posts/:id/edit"
-                  element={
-                    <ProtectedRoute requiredPermission="articles.read">
-                      <FreelanceArticleDetailPage />
-                    </ProtectedRoute>
-                  }
-                /> */}
               </Route>
             </Routes>
           </BrowserRouter>
