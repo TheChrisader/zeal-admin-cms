@@ -1,4 +1,5 @@
 import { useAuth } from "@/App";
+import HTMLParserRenderer from "@/components/custom/ArticleDisplay";
 import { Button } from "@/components/ui/button";
 import { apiClient } from "@/lib/apiClient";
 import { useQuery } from "@tanstack/react-query";
@@ -79,10 +80,15 @@ const ArticleViewPage = () => {
       <h1 className="text-2xl font-extrabold text-[#2F2D32]">
         {article.title}
       </h1>
-      <div
-        className="rounded-[20px] p-1 [&_a]:text-blue-500 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:font-bold [&_figure>img]:mb-2 [&_figure>img]:mt-4 [&_figure>img]:max-h-[350px] [&_figure>img]:rounded-md [&_figure>p]:text-black [&_figure]:mb-7 [&_figure]:flex [&_figure]:w-full [&_figure]:flex-col [&_figure]:items-center [&_img]:mx-auto [&_img]:block [&_img]:max-h-[350px] [&_img]:w-1/2 [&_img]:rounded-md [&_img]:object-cover [&_img]:object-center [&_p]:mb-4 [&_p]:max-w-[100vw] [&_p]:text-base [&_p]:font-normal [&_p]:text-[#696969]"
-        dangerouslySetInnerHTML={{ __html: article.content }}
-      />
+      <div className="rounded-[20px] p-1 [&_a]:text-blue-500 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:font-bold [&_figure>img]:mb-2 [&_figure>img]:mt-4 [&_figure>img]:max-h-[350px] [&_figure>img]:rounded-md [&_figure>p]:text-black [&_figure]:mb-7 [&_figure]:flex [&_figure]:w-full [&_figure]:flex-col [&_figure]:items-center [&_img]:mx-auto [&_img]:block [&_img]:max-h-[350px] [&_img]:w-1/2 [&_img]:rounded-md [&_img]:object-cover [&_img]:object-center [&_p]:mb-4 [&_p]:max-w-[100vw] [&_p]:text-base [&_p]:font-normal [&_p]:text-[#696969]">
+        <HTMLParserRenderer
+          htmlString={`<img
+          src="${article.image_url}"
+          alt="${article.title}"
+        />
+        ${article.content}`}
+        />{" "}
+      </div>
     </div>
   );
 };

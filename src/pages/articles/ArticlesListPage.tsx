@@ -163,6 +163,12 @@ const ArticlesListPage = () => {
       limit: 10,
       // status: "all",
       search: "",
+      generatedBy: "all" as string | undefined,
+      category: "all" as string | undefined,
+      // language: "all" as string | undefined,
+      // country: "all" as string | undefined,
+      // fromDate: "",
+      // toDate: "",
     },
   });
   const [inputValue, setInputValue] = useState(filters.search || "");
@@ -363,9 +369,7 @@ const ArticlesListPage = () => {
             value={filters.generatedBy}
             onValueChange={(value) => {
               const newGeneratedValue =
-                value === "all"
-                  ? undefined
-                  : (value as "user" | "zeal" | "auto");
+                value === "all" ? undefined : (value as "user" | "auto");
               setFilters((prev) => ({
                 ...prev,
                 generatedBy: newGeneratedValue,
@@ -379,7 +383,6 @@ const ArticlesListPage = () => {
             <SelectContent>
               <SelectItem value="all">All Sources</SelectItem>
               <SelectItem value="user">User</SelectItem>
-              <SelectItem value="zeal">Zeal</SelectItem>
               <SelectItem value="auto">Auto</SelectItem>
             </SelectContent>
           </Select>

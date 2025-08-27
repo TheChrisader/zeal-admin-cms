@@ -99,7 +99,9 @@ const DashboardLayout = () => {
         <div className="flex h-16 items-center px-4 gap-2">
           {/* <img src="/api/placeholder/32/32" alt="Logo" className="h-8 w-8" /> */}
           {!isSidebarCollapsed && (
-            <span className="text-xl font-bold">Admin Panel</span>
+            <span className="text-xl font-bold text-[#8884d8]">
+              Admin Panel
+            </span>
           )}
         </div>
         <Separator />
@@ -107,9 +109,7 @@ const DashboardLayout = () => {
       <ScrollArea className="flex-1 px-2">
         <div className="space-y-2 py-2">
           {navigation.map((item) => {
-            console.log("render count");
             if (item.permission && !hasPermission(item.permission)) return null;
-            console.log("bypass count");
 
             const isActive = location.pathname === item.href;
             const Icon = item.icon;
@@ -124,7 +124,7 @@ const DashboardLayout = () => {
                       : "px-4 justify-start"
                   }`}
                 >
-                  <Icon size={20} />
+                  <Icon className="text-[#8884d8]" size={20} />
                   {!isSidebarCollapsed && (
                     <span className="flex-1 text-left">{item.name}</span>
                   )}
@@ -231,8 +231,13 @@ const DashboardLayout = () => {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {/* <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem> */}
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="w-full">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                {/* <DropdownMenuItem>Settings</DropdownMenuItem> */}
                 {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />

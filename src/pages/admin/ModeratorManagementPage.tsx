@@ -207,7 +207,7 @@ const ModeratorManagement = () => {
 
       {isLoading ? (
         <>
-          {[1, 2].map((i) => (
+          {[1, 2, 3].map((i) => (
             <Card key={i} className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">

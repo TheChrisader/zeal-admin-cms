@@ -8,7 +8,6 @@ import DashboardPage from "./pages/Dashboard";
 import ArticlesListPage from "./pages/articles/ArticlesListPage";
 import ArticleDetailPage from "./pages/articles/ArticleDetailPage";
 import UsersListPage from "./pages/users/UsersListPage";
-// import UserDetailPage from './pages/users/UserDetailPage';
 import ModeratorManagementPage from "./pages/admin/ModeratorManagementPage";
 import FlaggedContentPage from "./pages/moderation/FlaggedContentPage";
 import SystemSettingsPage from "./pages/settings/SystemSettingsPage";
@@ -21,8 +20,8 @@ import FreelanceArticlesListPage from "./pages/freelance/FreelanceArticlesListPa
 import FreelanceArticleDetailPage from "./pages/freelance/FreelanceArticleDetailPage";
 import LoadingScreen from "./layouts/LoadingScreen";
 import UnauthorizedPage from "./pages/Unauthorized";
-// import FreelanceArticleViewPage from "./pages/freelance/FreelanceArticleViewPage";
 import DailyArticlesPage from "./pages/articles/DailyArticlesPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 
 const AuthContext = React.createContext<null | {
   user: any;
@@ -51,7 +50,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       const session = await apiClient("/api/v1/admin/auth/session");
-      // const session = await response.json();
       setUser(session);
     } catch (error) {
       console.error("Error checking auth status:", error);
@@ -69,10 +67,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           "Content-Type": "application/json",
         },
       });
-      // const response = await response.json();
-      // if (!response.ok) {
-      //   throw new Error(data.message || "Login failed");
-      // }
       setUser(response.user);
       setToken(response.token);
       return response;
@@ -87,7 +81,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [setToken]);
 
   const hasPermission = (permission: string) => {
-    // console.log(user?.permissions, "!!!!!!!!!!!!!!");
     return (
       user?.permissions?.includes(permission) ||
       user?.permissions?.includes("admin:all")
@@ -174,7 +167,6 @@ const App = () => {
                 }
               >
                 <Route index element={<DashboardPage />} />
-                {/* <Route index element={<Navigate to="/articles" replace />} /> */}
 
                 <Route
                   path="articles"
@@ -220,15 +212,6 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
-
-                {/* <Route
-                path="users/:id"
-                element={
-                  <ProtectedRoute requiredPermission="users.read">
-                    <UserDetailPage />
-                  </ProtectedRoute>
-                }
-              /> */}
 
                 <Route
                   path="moderators"
@@ -280,6 +263,15 @@ const App = () => {
                   element={
                     <ProtectedRoute requiredPermission="posts:read">
                       <DailyArticlesPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
                     </ProtectedRoute>
                   }
                 />

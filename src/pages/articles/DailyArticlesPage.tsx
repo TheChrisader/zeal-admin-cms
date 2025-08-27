@@ -98,7 +98,7 @@ const DailyArticlesPage = () => {
   const visibleArticles = articles.filter(
     (article) => !removedArticles[today]?.includes(article._id)
   );
-  console.log(removedArticles[today]);
+  console.log(data);
 
   // Clear localStorage if date changed
   useEffect(() => {
