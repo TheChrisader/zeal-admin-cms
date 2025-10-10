@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { apiClient } from "@/lib/apiClient";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +46,8 @@ interface UserFormProps {
 }
 
 export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
@@ -58,9 +62,34 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
     },
   });
 
+  const handleFormSubmit = async (data: UserFormValues) => {
+    setIsLoading(true);
+    try {
+      if (initialData?._id) {
+        await apiClient(`/api/v1/admin/bulk/users/${initialData._id}`, {
+          method: "PATCH",
+          body: JSON.stringify(data),
+        });
+      } else {
+        // await apiClient(`/api/v1/admin/bulk/user`, {
+        //   method: "POST",
+        //   body: JSON.stringify(data),
+        // });
+      }
+      onSubmit(data);
+    } catch (error) {
+      console.error("Failed to save user:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="email"
@@ -212,10 +241,12 @@ export function UserForm({ initialData, onSubmit, onCancel }: UserFormProps) {
           )}
         />
         <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit">Save</Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Saving..." : "Save"}
+          </Button>
         </div>
       </form>
     </Form>

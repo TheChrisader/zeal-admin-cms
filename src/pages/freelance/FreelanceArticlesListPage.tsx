@@ -85,6 +85,8 @@ const FreelanceArticlesListPage = () => {
         };
       }
 
+      console.log(response);
+
       return response;
     } catch (error) {
       console.error("Error fetching articles:", error);
@@ -188,7 +190,8 @@ const FreelanceArticlesListPage = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Title</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Author</TableHead>
+                    <TableHead>Category</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -199,28 +202,38 @@ const FreelanceArticlesListPage = () => {
                       <TableCell className="font-medium max-w-xs truncate">
                         {article.title}
                       </TableCell>
-                      <TableCell>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            article.moderationStatus === "published"
-                              ? "bg-green-100 text-green-800"
-                              : article.moderationStatus === "awaiting_approval"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : article.moderationStatus === "rejected"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {article.moderationStatus}
-                        </span>
+                      <TableCell className="font-medium">
+                        {article.display_name || 'Unknown'}
                       </TableCell>
                       <TableCell>
-                        {new Date(article.created_at).toLocaleDateString()}
+                        <div className="flex flex-wrap gap-1">
+                          {article.category && article.category.length > 0 ? (
+                            article.category.map((cat, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md"
+                              >
+                                {cat}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500 text-sm">No category</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {new Date(article.created_at).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </TableCell>
                       <TableCell className="text-right">
                         <Link
                           to={`/moderation/freelance/posts/${article.id}`}
-                          className="text-blue-500 hover:underline"
+                          className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200"
                         >
                           View
                         </Link>
@@ -230,7 +243,7 @@ const FreelanceArticlesListPage = () => {
                   {posts?.length === 0 && (
                     <TableRow>
                       <TableCell
-                        colSpan={4}
+                        colSpan={5}
                         className="text-center py-8 text-muted-foreground"
                       >
                         No freelance articles found

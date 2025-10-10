@@ -26,5 +26,5 @@ export const CATEGORIES = [
   "Profiles",
   "Music",
   "Movies",
-  "Sport",
+  "Sports",
 ];

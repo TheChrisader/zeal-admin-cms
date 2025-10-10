@@ -1,7 +1,7 @@
 // src/components/UserDialog.js
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useCreateUser, useUpdateUser } from "../../hooks/useUsers";
+import { apiClient } from "@/lib/apiClient";
 import {
   Dialog,
   DialogContent,
@@ -37,9 +37,6 @@ export function UserDialog({ user, open, onClose }: any) {
     },
   });
 
-  const createUser = useCreateUser();
-  const updateUser = useUpdateUser();
-
   useEffect(() => {
     if (user) {
       reset(user);
@@ -56,9 +53,17 @@ export function UserDialog({ user, open, onClose }: any) {
   const onSubmit = async (data: any) => {
     try {
       if (user) {
-        await updateUser.mutateAsync({ id: user.id, data });
+        console.log(data);
+        // await apiClient(`/api/v1/admin/bulk/user/${user.id}`, {
+        //   method: "PUT",
+        //   body: JSON.stringify(data),
+        // });
       } else {
-        await createUser.mutateAsync(data);
+        console.log("no");
+        // await apiClient(`/api/v1/admin/bulk/user`, {
+        //   method: "POST",
+        //   body: JSON.stringify(data),
+        // });
       }
       onClose();
     } catch (error) {
@@ -113,7 +118,10 @@ export function UserDialog({ user, open, onClose }: any) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="user">User</SelectItem>
-                <SelectItem value="moderator">Moderator</SelectItem>
+                <SelectItem value="writer">Writer</SelectItem>
+                <SelectItem value="freelance_writer">
+                  Freelance Writer
+                </SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>
             </Select>

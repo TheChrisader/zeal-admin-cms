@@ -4,6 +4,7 @@ export interface IDraft {
   _id?: Id;
   id: Id | string;
   user_id: Id | string;
+  display_name: string;
   user_name?: string;
   title: string;
   content: string;

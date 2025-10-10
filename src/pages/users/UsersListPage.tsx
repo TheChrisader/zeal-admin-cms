@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiPlus, FiSearch, FiFilter } from "react-icons/fi";
 
@@ -45,6 +45,22 @@ import {
 
 const MotionButton = motion(Button);
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 const fetchUsers = async (params: any) => {
   const searchParams = new URLSearchParams();
 
@@ -80,6 +96,16 @@ export default function UsersPage() {
     limit: 10,
     search: "",
   });
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 800);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, search: debouncedSearchQuery }));
+  }, [debouncedSearchQuery]);
+
+  const setSearch = (query: string) => {
+    setSearchQuery(query);
+  };
 
   const queryClient = useQueryClient();
 
@@ -122,6 +148,7 @@ export default function UsersPage() {
 
   const handleEditUser = (data: UserFormValues) => {
     if (!selectedUser) return;
+    queryClient.invalidateQueries({ queryKey: ["users"] });
     const updatedUsers = users.map((user) =>
       user.id === selectedUser.id
         ? {
@@ -213,7 +240,7 @@ export default function UsersPage() {
           <Input
             placeholder="Search users..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -263,7 +290,7 @@ export default function UsersPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               <AnimatePresence>
-                {filteredUsers.map((user) => (
+                {users.map((user) => (
                   <motion.tr
                     key={user._id.toString()}
                     initial={{ opacity: 0, y: 20 }}
