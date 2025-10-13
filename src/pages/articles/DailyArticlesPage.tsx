@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useEffect, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import {
@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,10 +31,11 @@ import {
   Copy,
   ExternalLink,
   MoreVertical,
-  Trash2,
   Download,
   ChevronLeft,
   ChevronRight,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/apiClient";
@@ -63,15 +65,57 @@ interface ApiResponse {
 
 const fetchDailyArticles = async (
   page: number,
-  limit: number
+  limit: number,
+  processed: number
 ): Promise<ApiResponse> => {
   const response = await apiClient(
-    `/api/v1/admin/bulk/daily-articles?page=${page}&limit=${limit}`
+    `/api/v1/admin/bulk/daily-articles?page=${page}&limit=${limit}&processed=${processed}`
   );
   return response;
 };
 
+interface BulkApiResponse {
+  status: string;
+  data: {
+    posts: Article[];
+    total: number;
+  };
+}
+
+const fetchAllDailyArticles = async (
+  processed: number
+): Promise<BulkApiResponse> => {
+  const response = await apiClient(`/api/v1/admin/bulk/daily-articles/dump`);
+  return response;
+};
+
+const markArticleAsProcessed = async (id: string) => {
+  const formData = new FormData();
+  formData.append("has_been_processed", "true");
+
+  await apiClient(`/api/v1/admin/bulk/posts/${id}`, {
+    method: "PUT",
+    body: formData,
+  });
+};
+
+const markArticlesAsProcessed = async (ids: string[]) => {
+  if (!ids.length) return;
+  await apiClient(`/api/v1/admin/bulk/posts`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ids,
+      updateData: { has_been_processed: true },
+    }),
+  });
+};
+
 const DailyArticlesPage = () => {
+  const queryClient = useQueryClient();
+
   const [selectedArticles, setSelectedArticles] = useState<Set<string>>(
     new Set()
   );
@@ -80,24 +124,71 @@ const DailyArticlesPage = () => {
   >(`removed-articles-${format(new Date(), "yyyy-MM-dd")}`, {});
   const [page, setPage] = useState(1);
   const [limit] = useState(10); // Fixed limit as per API spec
+  const [isProcessed, setIsProcessed] = useState(false); // false for unprocessed (0), true for processed (1)
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [processingArticles, setProcessingArticles] = useState<Set<string>>(
+    new Set()
+  );
 
   const today = format(new Date(), "yyyy-MM-dd");
   const [removedArticlesForToday, setRemovedArticlesForToday] = useState<
     string[]
   >(removedArticles[today] || []);
 
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [isProcessed]);
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["dailyArticles", page],
-    queryFn: () => fetchDailyArticles(page, limit),
+    queryKey: ["dailyArticles", page, isProcessed],
+    queryFn: () => fetchDailyArticles(page, limit, isProcessed ? 1 : 0),
   });
 
-  const articles = data?.data?.posts || [];
+  // Mutations
+  const processMutation = useMutation({
+    mutationFn: markArticlesAsProcessed,
+    onSuccess: async (_, ids) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["dailyArticles", page, isProcessed],
+        refetchType: "all",
+      });
+      setSelectedArticles(new Set());
+      toast.success(`${ids.length} article(s) marked as processed`);
+    },
+    onError: (error) => {
+      console.error("Failed to mark articles as processed:", error);
+      toast.error("Failed to mark articles as processed");
+    },
+  });
+
+  const processSingleMutation = useMutation({
+    mutationFn: markArticleAsProcessed,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["dailyArticles", page, isProcessed],
+        refetchType: "all",
+      });
+      toast.success("Article marked as processed");
+    },
+    onError: (error) => {
+      console.error("Failed to mark article as processed:", error);
+      toast.error("Failed to mark article as processed");
+    },
+  });
+
+  const articles = useMemo(() => data?.data?.posts || [], [data?.data?.posts]);
   const pagination = data?.data?.pagination;
 
-  // Filter out removed articles
-  const visibleArticles = articles.filter(
-    (article) => !removedArticles[today]?.includes(article._id)
-  );
+  // Filter out removed articles (only for unprocessed articles)
+  const visibleArticles = useMemo(() => {
+    if (isProcessed) {
+      return articles;
+    }
+    return articles.filter(
+      (article) => !removedArticles[today]?.includes(article._id)
+    );
+  }, [articles, isProcessed, removedArticles, today]);
   console.log(data);
 
   // Clear localStorage if date changed
@@ -155,6 +246,144 @@ const DailyArticlesPage = () => {
     setSelectedArticles(newSelected);
   };
 
+  const handleCopyAllAsCSV = async () => {
+    try {
+      const bulkData = await fetchAllDailyArticles(isProcessed ? 1 : 0);
+      const allArticlesData = bulkData.data.posts;
+
+      if (allArticlesData.length === 0) {
+        toast.error("No articles to export");
+        return;
+      }
+
+      const csvContent = [
+        ["Title", "URL"],
+        ...allArticlesData.map((article) => [
+          `"${article.title.replace(/"/g, '""')}"`,
+          `https://zealnews.africa/en/post/${article.slug}`,
+        ]),
+      ]
+        .map((row) => row.join(","))
+        .join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `daily-articles-${today}-all.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(`CSV with ${allArticlesData.length} articles downloaded`);
+    } catch (error) {
+      console.error("Failed to export all articles:", error);
+      toast.error("Failed to export all articles");
+    }
+  };
+
+  const handleCopyAllAsJSON = async () => {
+    try {
+      const bulkData = await fetchAllDailyArticles(isProcessed ? 1 : 0);
+      const allArticlesData = bulkData.data.posts;
+
+      if (allArticlesData.length === 0) {
+        toast.error("No articles to export");
+        return;
+      }
+
+      const jsonData = allArticlesData.map((article) => ({
+        title: article.title,
+        url: `https://zealnews.africa/en/post/${article.slug}`,
+      }));
+
+      const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `daily-articles-${today}-all.json`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(`JSON with ${allArticlesData.length} articles downloaded`);
+    } catch (error) {
+      console.error("Failed to export all articles:", error);
+      toast.error("Failed to export all articles");
+    }
+  };
+
+  const handleCopySelectedAsCSV = () => {
+    const selectedOnly = visibleArticles.filter((article) =>
+      selectedArticles.has(article._id)
+    );
+
+    if (selectedOnly.length === 0) {
+      toast.error("No articles selected to export");
+      return;
+    }
+
+    const csvContent = [
+      ["Title", "URL"],
+      ...selectedOnly.map((article) => [
+        `"${article.title.replace(/"/g, '""')}"`,
+        `https://zealnews.africa/en/post/${article.slug}`,
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `daily-articles-${today}-selected.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(
+      `CSV with ${selectedOnly.length} selected articles downloaded`
+    );
+  };
+
+  const handleCopySelectedAsJSON = () => {
+    const selectedOnly = visibleArticles.filter((article) =>
+      selectedArticles.has(article._id)
+    );
+
+    if (selectedOnly.length === 0) {
+      toast.error("No articles selected to export");
+      return;
+    }
+
+    const jsonData = selectedOnly.map((article) => ({
+      title: article.title,
+      url: `https://zealnews.africa/en/post/${article.slug}`,
+    }));
+
+    const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `daily-articles-${today}-selected.json`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(
+      `JSON with ${selectedOnly.length} selected articles downloaded`
+    );
+  };
+
   const handleCopyTitle = (title: string) => {
     navigator.clipboard.writeText(title);
     toast.success("Title copied to clipboard");
@@ -171,113 +400,21 @@ const DailyArticlesPage = () => {
     window.open(url, "_blank");
   };
 
-  const handleRemoveArticle = (articleId: string) => {
-    const newRemoved = [...removedArticlesForToday, articleId];
-    setRemovedArticlesForToday(newRemoved);
-    setRemovedArticles({
-      ...removedArticles,
-      [today]: newRemoved,
-    });
-
-    // Also remove from selected if it was selected
-    if (selectedArticles.has(articleId)) {
-      const newSelected = new Set(selectedArticles);
-      newSelected.delete(articleId);
-      setSelectedArticles(newSelected);
-    }
-
-    toast.success("Article removed from list");
+  const handleMarkAsProcessed = async (ids: string | string[]) => {
+    await processMutation.mutateAsync(Array.isArray(ids) ? ids : [ids]);
   };
 
-  const handleCopyAllAsCSV = () => {
-    const selectedOrAll =
-      selectedArticles.size > 0
-        ? visibleArticles.filter((article) => selectedArticles.has(article._id))
-        : visibleArticles;
-
-    if (selectedOrAll.length === 0) {
-      toast.error("No articles to export");
-      return;
+  const handleMarkSingleAsProcessed = async (id: string) => {
+    setProcessingArticles((prev) => new Set(prev).add(id));
+    try {
+      await processSingleMutation.mutateAsync(id);
+    } finally {
+      setProcessingArticles((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
     }
-
-    const csvContent = [
-      ["Title", "URL"],
-      ...selectedOrAll.map((article) => [
-        `"${article.title.replace(/"/g, '""')}"`,
-        `https://zealnews.africa/en/post/${article.slug}`,
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `daily-articles-${today}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast.success(`CSV with ${selectedOrAll.length} articles downloaded`);
-  };
-
-  const handleCopyAllAsJSON = () => {
-    const selectedOrAll =
-      selectedArticles.size > 0
-        ? visibleArticles.filter((article) => selectedArticles.has(article._id))
-        : visibleArticles;
-
-    if (selectedOrAll.length === 0) {
-      toast.error("No articles to export");
-      return;
-    }
-
-    const jsonData = selectedOrAll.map((article) => ({
-      title: article.title,
-      url: `https://zealnews.africa/en/post/${article.slug}`,
-    }));
-
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `daily-articles-${today}.json`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast.success(`JSON with ${selectedOrAll.length} articles downloaded`);
-  };
-
-  const handleRemoveAll = () => {
-    const selectedOrAll =
-      selectedArticles.size > 0
-        ? visibleArticles
-            .filter((article) => selectedArticles.has(article._id))
-            .map((a) => a._id)
-        : visibleArticles.map((article) => article._id);
-
-    if (selectedOrAll.length === 0) {
-      toast.error("No articles to remove");
-      return;
-    }
-
-    const newRemoved = [...removedArticlesForToday, ...selectedOrAll];
-    setRemovedArticlesForToday(newRemoved);
-    setRemovedArticles({
-      ...removedArticles,
-      [today]: newRemoved,
-    });
-
-    // Clear selection
-    setSelectedArticles(new Set());
-
-    toast.success(`${selectedOrAll.length} articles removed from list`);
   };
 
   if (isError) {
@@ -297,34 +434,59 @@ const DailyArticlesPage = () => {
         <div>
           <h1 className="text-3xl font-bold">Daily Articles</h1>
           <p className="text-muted-foreground mt-1">
-            Articles created on {format(new Date(), "MMMM d, yyyy")}
+            {isProcessed ? "Processed" : "Unprocessed"} articles created on{" "}
+            {format(new Date(), "MMMM d, yyyy")}
           </p>
+          <div className="flex items-center space-x-2 mt-2">
+            <Switch
+              id="processed-toggle"
+              checked={isProcessed}
+              onCheckedChange={setIsProcessed}
+            />
+            <label htmlFor="processed-toggle" className="text-sm font-medium">
+              Show processed articles
+            </label>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
                 <Download className="mr-2 h-4 w-4" />
-                Export
+                Export All
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={handleCopyAllAsCSV}>
-                Copy as CSV
+                Export All as CSV
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleCopyAllAsJSON}>
-                Copy as JSON
+                Export All as JSON
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            variant="destructive"
-            onClick={handleRemoveAll}
-            disabled={visibleArticles.length === 0}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Remove All
-          </Button>
+          {!isProcessed && (
+            <Button
+              variant="default"
+              onClick={async () =>
+                await handleMarkAsProcessed(
+                  selectedArticles.size > 0
+                    ? Array.from(selectedArticles)
+                    : visibleArticles.map((a) => a._id)
+                )
+              }
+              disabled={
+                visibleArticles.length === 0 || processMutation.isPending
+              }
+            >
+              {processMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="mr-2 h-4 w-4" />
+              )}
+              Mark all as processed
+            </Button>
+          )}
         </div>
       </div>
 
@@ -332,15 +494,37 @@ const DailyArticlesPage = () => {
         <div className="bg-muted p-3 rounded-md flex items-center justify-between">
           <span>{selectedArticles.size} article(s) selected</span>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleCopyAllAsCSV}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopySelectedAsCSV}
+            >
               Export Selected (CSV)
             </Button>
-            <Button variant="outline" size="sm" onClick={handleCopyAllAsJSON}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopySelectedAsJSON}
+            >
               Export Selected (JSON)
             </Button>
-            <Button variant="destructive" size="sm" onClick={handleRemoveAll}>
-              Remove Selected
-            </Button>
+            {!isProcessed && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={async () =>
+                  await handleMarkAsProcessed(Array.from(selectedArticles))
+                }
+                disabled={processMutation.isPending}
+              >
+                {processMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="mr-2 h-4 w-4" />
+                )}
+                Mark as Processed
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -349,8 +533,12 @@ const DailyArticlesPage = () => {
         <CardHeader>
           <CardTitle>Articles</CardTitle>
           <CardDescription>
-            {(pagination?.total || 0) - (removedArticles[today]?.length || 0)}{" "}
-            ready for processing
+            {isProcessed
+              ? `${pagination?.total || 0} processed articles`
+              : `${
+                  (pagination?.total || 0) -
+                  (removedArticles[today]?.length || 0)
+                } ready for processing`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -393,7 +581,9 @@ const DailyArticlesPage = () => {
                     <TableHead className="w-24">Copy Title</TableHead>
                     <TableHead className="w-24">Copy URL</TableHead>
                     <TableHead className="w-24">Open Link</TableHead>
-                    <TableHead className="w-24">Remove</TableHead>
+                    {!isProcessed && (
+                      <TableHead className="w-24">Process</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -451,17 +641,26 @@ const DailyArticlesPage = () => {
                           {/* Open */}
                         </Button>
                       </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRemoveArticle(article._id)}
-                          className="h-8 px-2"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Remove
-                        </Button>
-                      </TableCell>
+                      {!isProcessed && (
+                        <TableCell>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() =>
+                              handleMarkSingleAsProcessed(article._id)
+                            }
+                            disabled={processingArticles.has(article._id)}
+                            className="h-8 px-2"
+                          >
+                            {processingArticles.has(article._id) ? (
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                              <Check className="h-4 w-4 mr-1" />
+                            )}
+                            Process
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>

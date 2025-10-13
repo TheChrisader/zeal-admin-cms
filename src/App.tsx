@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import DashboardLayout from "./layouts/DashboardLayout";
 import LoginPage from "./pages/auth/LoginPage";
@@ -67,8 +67,19 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           "Content-Type": "application/json",
         },
       });
-      setUser(response.user);
+
+      // Set token first so subsequent API calls work
       setToken(response.token);
+
+      // Then fetch complete session data to ensure permissions are properly loaded
+      try {
+        const session = await apiClient("/api/v1/admin/auth/session");
+        setUser(session);
+      } catch (error) {
+        // If session fetch fails, use the user data from login response
+        setUser(response.user);
+      }
+
       return response;
     },
     [setToken]

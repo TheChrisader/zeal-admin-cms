@@ -121,6 +121,10 @@ const ArticleDetailPage = () => {
     mutationFn: async (updatedArticle: any) => {
       const formData = new FormData();
 
+      if (!article.has_been_processed && article.source_type === "auto") {
+        formData.append("has_been_processed", "true");
+      }
+
       // Append all simple fields
       Object.keys(updatedArticle).forEach((key) => {
         if (
