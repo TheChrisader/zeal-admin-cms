@@ -132,6 +132,7 @@ const ArticleDetailPage = () => {
           key !== "content" &&
           key !== "source" &&
           key !== "reactions" &&
+          key !== "has_been_processed" &&
           updatedArticle[key] !== undefined &&
           updatedArticle[key] !== null
         ) {
