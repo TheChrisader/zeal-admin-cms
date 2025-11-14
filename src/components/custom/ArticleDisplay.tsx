@@ -45,7 +45,10 @@ const CustomParagraph: React.FC<CustomComponentProps> = ({
   children,
   ...props
 }) => (
-  <p className="mb-4 font-medium leading-relaxed" {...props}>
+  <p
+    className="mb-4 max-w-[100vw] text-base font-normal leading-7 text-gray-800/75"
+    {...props}
+  >
     {children}
   </p>
 );
@@ -79,7 +82,7 @@ const CustomDiv: React.FC<CustomComponentProps> = ({
 
   ...props
 }) => (
-  <div className="mb-2 rounded-r border-l-2 p-2" {...props}>
+  <div className="mb-2" {...props}>
     {children}
   </div>
 );
@@ -287,12 +290,10 @@ const parseHTMLToReact = (
 
     const props: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(element.attributes)) {
-      if (key === "class") {
-        props.className = value.trim();
-      } else if (key === "style") {
-      } else {
-        props[key] = value;
+      if (key === "class" || key === "style") {
+        continue;
       }
+      props[key] = value;
     }
 
     switch (tagName) {

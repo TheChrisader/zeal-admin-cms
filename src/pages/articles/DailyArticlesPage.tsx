@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
@@ -111,6 +112,28 @@ const markArticlesAsProcessed = async (ids: string[]) => {
       updateData: { has_been_processed: true },
     }),
   });
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+    },
+  },
 };
 
 const DailyArticlesPage = () => {
@@ -429,8 +452,13 @@ const DailyArticlesPage = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Daily Articles</h1>
           <p className="text-muted-foreground mt-1">
@@ -488,10 +516,10 @@ const DailyArticlesPage = () => {
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {selectedArticles.size > 0 && (
-        <div className="bg-muted p-3 rounded-md flex items-center justify-between">
+        <motion.div variants={itemVariants} className="bg-muted p-3 rounded-md flex items-center justify-between">
           <span>{selectedArticles.size} article(s) selected</span>
           <div className="flex gap-2">
             <Button
@@ -526,11 +554,20 @@ const DailyArticlesPage = () => {
               </Button>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
 
-      <Card>
-        <CardHeader>
+      <motion.div
+        variants={itemVariants}
+        whileHover={{
+          y: -2,
+          boxShadow:
+            "0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)",
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
+        <Card className="border border-indigo-200 bg-gradient-to-br from-white to-gray-50/30 transition-all duration-300">
+          <CardHeader>
           <CardTitle>Articles</CardTitle>
           <CardDescription>
             {isProcessed
@@ -599,7 +636,9 @@ const DailyArticlesPage = () => {
                       </TableCell>
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
-                          <span className="line-clamp-1">{article.title}</span>
+                          <span className="line-clamp-1 text-indigo-800/80">
+                            {article.title}
+                          </span>
                           <Link
                             to={`/articles/${article._id}`}
                             className="text-sm text-muted-foreground hover:underline mt-1"
@@ -698,7 +737,8 @@ const DailyArticlesPage = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

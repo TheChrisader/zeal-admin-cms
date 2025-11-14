@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -152,6 +153,28 @@ const ArticlesListPage = () => {
   const queryClient = useQueryClient();
 
   const isFirstRender = useIsFirstRender();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
 
   // State
   const [selectedArticles, setSelectedArticles] = useState<Set<number>>(
@@ -316,25 +339,39 @@ const ArticlesListPage = () => {
   //   );
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <motion.div variants={itemVariants} className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">Articles</h1>
           <p className="text-muted-foreground mt-1">
             Manage and monitor all articles
           </p>
         </div>
-        <Button onClick={() => navigate("/articles/new")}>
-          <Plus className="mr-2 h-4 w-4" /> New Article
-        </Button>
-      </div>
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        >
+          <Button onClick={() => navigate("/articles/new")}>
+            <Plus className="mr-2 h-4 w-4" /> New Article
+          </Button>
+        </motion.div>
+      </motion.div>
 
       {/* Filters */}
       {/* <Card>
         <CardContent className="p-4 space-y-4"> */}
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-4">
+      <motion.div variants={itemVariants} className="space-y-4">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-wrap gap-4"
+        >
           <div className="flex-1 min-w-[200px]">
             <Input
               placeholder="Search articles..."
@@ -392,10 +429,15 @@ const ArticlesListPage = () => {
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" /> Export
             </Button> */}
-        </div>
+        </motion.div>
 
         {selectedArticles.size > 0 && (
-          <div className="flex items-center justify-between bg-muted/50 p-2 rounded">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="flex items-center justify-between bg-muted/50 p-2 rounded"
+          >
             <span>{selectedArticles.size} articles selected</span>
             <div className="space-x-2">
               <Button variant="outline" size="sm">
@@ -411,14 +453,23 @@ const ArticlesListPage = () => {
                 Delete Selected
               </Button>
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
       {/* </CardContent>
       </Card> */}
 
       {/* Articles Table */}
-      <Card>
+      <motion.div
+        variants={itemVariants}
+        whileHover={{
+          y: -2,
+          boxShadow:
+            "0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)",
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
+        <Card>
         <CardContent className="p-0">
           {isLoading ? (
             <div className="w-full overflow-auto">
@@ -481,7 +532,7 @@ const ArticlesListPage = () => {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        <div className="flex items-center">
+                        <div className="flex items-center text-indigo-800/80">
                           {article.title}
                           {article.flags > 0 && (
                             <Badge variant="destructive" className="ml-2">
@@ -604,7 +655,8 @@ const ArticlesListPage = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

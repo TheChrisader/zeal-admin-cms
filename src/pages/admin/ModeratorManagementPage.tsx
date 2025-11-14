@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle, Plus, Pencil, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,6 +74,28 @@ const ModeratorManagement = () => {
     React.useState<Moderator | null>(null);
   const queryClient = useQueryClient();
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
+
   const {
     data: moderators,
     isLoading,
@@ -127,8 +150,13 @@ const ModeratorManagement = () => {
     );
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex justify-between items-center">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="p-4 space-y-4"
+    >
+      <motion.div variants={itemVariants} className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Moderator Management</h1>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
@@ -203,32 +231,50 @@ const ModeratorManagement = () => {
             </form> */}
           </DialogContent>
         </Dialog>
-      </div>
+      </motion.div>
 
       {isLoading ? (
-        <>
+        <motion.div variants={itemVariants} className="grid gap-4">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Skeleton className="h-6 w-32" />
-                  <Skeleton className="h-4 w-48" />
-                </div>
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {[1, 2, 3, 4].map((badge) => (
-                  <Skeleton key={badge} className="h-4 w-32 rounded-full" />
-                ))}
-              </div>
-            </Card>
+            <motion.div
+              key={i}
+              variants={itemVariants}
+              transition={{ delay: i * 0.1 }}
+            >
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-3 pb-0">
+                  <CardTitle className="text-lg font-medium">
+                    <Skeleton className="h-6 w-32" />
+                  </CardTitle>
+                  <Skeleton className="h-8 w-8 rounded" />
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-48" />
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3].map((badge) => (
+                        <Skeleton key={badge} className="h-5 w-32 rounded-full" />
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </>
+        </motion.div>
       ) : (
-        <div className="grid gap-4">
-          {moderators?.map((moderator) => (
-            <Card key={moderator.email}>
+        <motion.div variants={itemVariants} className="grid gap-4">
+          {moderators?.map((moderator, index) => (
+            <motion.div
+              key={moderator.email}
+              variants={itemVariants}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{
+                y: -2,
+                boxShadow: "0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)",
+              }}
+            >
+              <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-3 pb-0">
                 <CardTitle className="text-lg font-medium">
                   {moderator.name}
@@ -289,6 +335,15 @@ const ModeratorManagement = () => {
                     )}
                     {moderator.permissions.find(
                       (privilege) =>
+                        privilege.includes("referral") ||
+                        privilege.includes("admin")
+                    ) && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                        View Referral Analytics
+                      </span>
+                    )}
+                    {moderator.permissions.find(
+                      (privilege) =>
                         privilege.includes("comment") ||
                         privilege.includes("admin")
                     ) && (
@@ -309,10 +364,11 @@ const ModeratorManagement = () => {
                 </div>
               </CardContent>
             </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

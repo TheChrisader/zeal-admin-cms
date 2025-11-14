@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/App";
 import { apiClient } from "@/lib/apiClient";
@@ -33,6 +34,29 @@ const ProfilePage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isPasswordSectionVisible, setIsPasswordSectionVisible] =
     useState(false);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
 
   // Fetch profile data
   const { data: profile, isLoading } = useQuery<ProfileData>({
@@ -113,151 +137,221 @@ const ProfilePage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-700/80" />
       </div>
     );
   }
 
   return (
-    <div className="">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className=""
+    >
       <div className="max-w-3xl  space-y-6">
-        <div>
+        <motion.div variants={itemVariants}>
           <h1 className="text-3xl font-bold">Profile</h1>
           <p className="text-muted-foreground">
             Manage your personal information
           </p>
-        </div>
+        </motion.div>
 
-        <Card className="border-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserRound className="h-5 w-5" />
-              Personal Information
-            </CardTitle>
-            <CardDescription>Update your personal details here</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleUpdateProfile} autoComplete="off">
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    autoComplete="email"
-                    type="email"
-                    value={profile?.email || ""}
-                    disabled
-                    className="pl-10 bg-muted"
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Your email address is used for login and cannot be changed
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <UserRound className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    autoComplete="full-name"
-                    value={profile?.name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your full name"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium flex items-center gap-2">
-                      <KeyRound className="h-5 w-5" />
-                      Password
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      Change your password
-                    </p>
+        <motion.div
+          variants={itemVariants}
+          whileHover={{
+            y: -2,
+            boxShadow:
+              "0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)",
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
+          <Card className="border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserRound className="h-5 w-5" />
+                Personal Information
+              </CardTitle>
+              <CardDescription>
+                Update your personal details here
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleUpdateProfile} autoComplete="off">
+              <CardContent className="space-y-6">
+                <motion.div variants={itemVariants} className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      autoComplete="email"
+                      type="email"
+                      value={profile?.email || ""}
+                      disabled
+                      className="pl-10 bg-muted"
+                    />
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      setIsPasswordSectionVisible(!isPasswordSectionVisible)
-                    }
-                  >
-                    {isPasswordSectionVisible ? "Cancel" : "Change Password"}
-                  </Button>
-                </div>
+                  <p className="text-sm text-muted-foreground">
+                    Your email address is used for login and cannot be changed
+                  </p>
+                </motion.div>
 
-                {isPasswordSectionVisible && (
-                  <div className="space-y-4 pt-4 border-t">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Current Password</Label>
-                      <Input
-                        id="currentPassword"
-                        autoComplete="current-password"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        placeholder="Enter current password"
-                      />
-                    </div>
+                <motion.div variants={itemVariants} className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <div className="relative">
+                    <UserRound className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      autoComplete="full-name"
+                      value={profile?.name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="pl-10"
+                    />
+                  </div>
+                </motion.div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="newPassword">New Password</Label>
-                      <Input
-                        id="newPassword"
-                        autoComplete="new-password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new password"
-                      />
+                <motion.div variants={itemVariants}>
+                  <Separator />
+                </motion.div>
+
+                <motion.div variants={itemVariants} className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium flex items-center gap-2">
+                        <KeyRound className="h-5 w-5" />
+                        Password
+                      </h3>
                       <p className="text-sm text-muted-foreground">
-                        Password must be at least 8 characters long
+                        Change your password
                       </p>
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">
-                        Confirm New Password
-                      </Label>
-                      <Input
-                        id="confirmPassword"
-                        autoComplete="confirm-password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                      />
-                    </div>
+                    <motion.div variants={itemVariants}>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 17,
+                        }}
+                      >
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            setIsPasswordSectionVisible(
+                              !isPasswordSectionVisible
+                            )
+                          }
+                        >
+                          {isPasswordSectionVisible
+                            ? "Cancel"
+                            : "Change Password"}
+                        </Button>
+                      </motion.div>
+                    </motion.div>
                   </div>
-                )}
-              </div>
-            </CardContent>
 
-            <CardFooter className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={updateProfileMutation.isPending}
-                className="min-w-32"
-              >
-                {updateProfileMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Save Changes
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+                  {isPasswordSectionVisible && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                      className="space-y-4 pt-4 border-t"
+                    >
+                      <motion.div
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-2"
+                      >
+                        <Label htmlFor="currentPassword">
+                          Current Password
+                        </Label>
+                        <Input
+                          id="currentPassword"
+                          autoComplete="current-password"
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          placeholder="Enter current password"
+                        />
+                      </motion.div>
+
+                      <motion.div
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-2"
+                      >
+                        <Label htmlFor="newPassword">New Password</Label>
+                        <Input
+                          id="newPassword"
+                          autoComplete="new-password"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter new password"
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          Password must be at least 8 characters long
+                        </p>
+                      </motion.div>
+
+                      <motion.div
+                        variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-2"
+                      >
+                        <Label htmlFor="confirmPassword">
+                          Confirm New Password
+                        </Label>
+                        <Input
+                          id="confirmPassword"
+                          autoComplete="confirm-password"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Confirm new password"
+                        />
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </CardContent>
+
+              <CardFooter className="flex justify-end">
+                <motion.div variants={itemVariants}>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <Button
+                      type="submit"
+                      disabled={updateProfileMutation.isPending}
+                      className="min-w-32"
+                    >
+                      {updateProfileMutation.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Save Changes
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              </CardFooter>
+            </form>
+          </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

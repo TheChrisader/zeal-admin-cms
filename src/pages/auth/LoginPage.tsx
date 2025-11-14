@@ -40,7 +40,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-sky-100 dark:from-slate-900 dark:to-sky-800">
       <Card className="w-full max-w-md shadow-xl bg-white dark:bg-slate-800 rounded-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100">
+          <CardTitle className="text-2xl font-bold text-center text-indigo-700/80">
             Admin Login
           </CardTitle>
         </CardHeader>
@@ -55,7 +55,7 @@ export default function LoginPage() {
                 }
                 placeholder="Email"
                 required
-                className="w-full transition-all duration-150 bg-gray-50 border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-slate-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
+                className="w-full transition-all duration-150 bg-gray-50 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-slate-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500"
               />
             </div>
             <div className="relative flex items-center">

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FlaggedContent } from "./types";
 import { mockApi } from "./api/mockApi";
@@ -59,6 +60,28 @@ const ContentModerationQueue = () => {
   });
 
   const queryClient = useQueryClient();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
 
   // Fetch flagged content with filters
   const { data: flaggedContent = [], isLoading } = useQuery({
@@ -168,37 +191,52 @@ const ContentModerationQueue = () => {
         </div> */}
 
         <div className="flex justify-end space-x-2 mt-4">
-          <Button
-            variant="destructive"
-            onClick={() =>
-              updateContentMutation.mutate({
-                id: content.id,
-                status: "REJECTED",
-              })
-            }
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <XCircle className="w-4 h-4 mr-2" />
-            Reject
-          </Button>
-          <Button
-            variant="default"
-            onClick={() =>
-              updateContentMutation.mutate({
-                id: content.id,
-                status: "APPROVED",
-              })
-            }
+            <Button
+              variant="destructive"
+              onClick={() =>
+                updateContentMutation.mutate({
+                  id: content.id,
+                  status: "REJECTED",
+                })
+              }
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Reject
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <CheckCircle2 className="w-4 h-4 mr-2" />
-            Approve
-          </Button>
-          <Link
-            className="bg-primary hover:bg-primary/90 px-4 py-2 rounded-md flex items-center justify-center text-white text-sm font-medium"
-            to={`/articles/${content._id.toString()}`}
+            <Button
+              variant="default"
+              onClick={() =>
+                updateContentMutation.mutate({
+                  id: content.id,
+                  status: "APPROVED",
+                })
+              }
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+              Approve
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Link2 className="w-4 h-4 mr-2" />
-            Go to Article
-          </Link>
+            <Link
+              className="bg-primary hover:bg-primary/90 px-4 py-2 rounded-md flex items-center justify-center text-white text-sm font-medium"
+              to={`/articles/${content._id.toString()}`}
+            >
+              <Link2 className="w-4 h-4 mr-2" />
+              Go to Article
+            </Link>
+          </motion.div>
         </div>
       </div>
     );
@@ -211,97 +249,134 @@ const ContentModerationQueue = () => {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Content Moderation Queue</CardTitle>
-            <CardDescription>
-              Review and moderate flagged content
-            </CardDescription>
-          </div>
-          <div className="flex items-center space-x-2">
-            {selectedItems.length > 0 && (
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="destructive"
-                  onClick={() =>
-                    bulkUpdateMutation.mutate({
-                      ids: selectedItems,
-                      status: "REJECTED",
-                    })
-                  }
-                >
-                  Reject Selected
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={() =>
-                    bulkUpdateMutation.mutate({
-                      ids: selectedItems,
-                      status: "APPROVED",
-                    })
-                  }
-                >
-                  Approve Selected
-                </Button>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      {/* Header */}
+      <motion.div variants={itemVariants}>
+        <Card className="w-full p-0 bg-transparent border-0">
+          <CardHeader className="p-0 pb-4">
+            <div className="flex items-center space-y-2 justify-between">
+              <div className="flex flex-col space-y-1">
+                <CardTitle className="text-indigo-500 font-bold">
+                  Content Moderation Queue
+                </CardTitle>
+                <CardDescription>
+                  Review and moderate flagged content
+                </CardDescription>
               </div>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
+              <div className="flex items-center space-x-2">
+                {selectedItems.length > 0 && (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="flex items-center space-x-2"
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant="destructive"
+                        onClick={() =>
+                          bulkUpdateMutation.mutate({
+                            ids: selectedItems,
+                            status: "REJECTED",
+                          })
+                        }
+                      >
+                        Reject Selected
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant="default"
+                        onClick={() =>
+                          bulkUpdateMutation.mutate({
+                            ids: selectedItems,
+                            status: "APPROVED",
+                          })
+                        }
+                      >
+                        Approve Selected
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      </motion.div>
+
+      {/* Filters and Content */}
+      <motion.div variants={itemVariants}>
+        <Card className="w-full">
+          <CardContent className="pt-6">
         <div className="mb-4 flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Filter className="w-4 h-4" />
             <span className="text-sm font-medium">Filters:</span>
           </div>
 
-          <Select
-            value={filters.status}
-            onValueChange={(value) =>
-              setFilters((prev) => ({ ...prev, status: value }))
-            }
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Status</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="APPROVED">Approved</SelectItem>
-              <SelectItem value="REJECTED">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Select
+              value={filters.status}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, status: value }))
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Status</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="APPROVED">Approved</SelectItem>
+                <SelectItem value="REJECTED">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </motion.div>
 
-          <Select
-            value={filters.contentType}
-            onValueChange={(value) =>
-              setFilters((prev) => ({ ...prev, contentType: value }))
-            }
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Content Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Types</SelectItem>
-              <SelectItem value="ARTICLE">Articles</SelectItem>
-              <SelectItem value="COMMENT">Comments</SelectItem>
-            </SelectContent>
-          </Select>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Select
+              value={filters.contentType}
+              onValueChange={(value) =>
+                setFilters((prev) => ({ ...prev, contentType: value }))
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Content Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="ARTICLE">Articles</SelectItem>
+                <SelectItem value="COMMENT">Comments</SelectItem>
+              </SelectContent>
+            </Select>
+          </motion.div>
 
-          <Input
-            type="number"
-            placeholder="Min Reports"
-            className="w-[150px]"
-            value={filters.minReports}
-            onChange={(e) =>
-              setFilters((prev) => ({
-                ...prev,
-                minReports: e.target.value,
-              }))
-            }
-          />
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Input
+              type="number"
+              placeholder="Min Reports"
+              className="w-[150px]"
+              value={filters.minReports}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  minReports: e.target.value,
+                }))
+              }
+            />
+          </motion.div>
         </div>
 
         <Table>
@@ -328,8 +403,15 @@ const ContentModerationQueue = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {flaggedContent?.map((content: any) => (
-              <TableRow key={content._id.toString()}>
+            {flaggedContent?.map((content: any, index: number) => (
+              <motion.tr
+                key={content._id.toString()}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: index * 0.05 }}
+                whileHover={{ scale: 1.01, backgroundColor: "rgba(99, 102, 241, 0.05)" }}
+              >
                 <TableCell>
                   <Checkbox
                     checked={selectedItems.includes(content.id)}
@@ -375,9 +457,14 @@ const ContentModerationQueue = () => {
                     }
                   >
                     <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Button variant="ghost" size="icon">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </motion.div>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-xl">
                       <DialogHeader>
@@ -390,12 +477,14 @@ const ContentModerationQueue = () => {
                     </DialogContent>
                   </Dialog>
                 </TableCell>
-              </TableRow>
+              </motion.tr>
             ))}
           </TableBody>
         </Table>
-      </CardContent>
-    </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 };
 

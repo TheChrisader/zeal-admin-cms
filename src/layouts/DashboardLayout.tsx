@@ -14,6 +14,7 @@ import {
   Settings,
   User,
   Bell,
+  TrendingUp,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -50,6 +51,12 @@ const DashboardLayout = () => {
       permission: "posts:read",
     },
     {
+      name: "Daily Articles",
+      icon: FileText,
+      href: "/daily-articles",
+      permission: "posts:read",
+    },
+    {
       name: "Freelance",
       icon: Bell,
       href: "/moderation/freelance/posts",
@@ -60,6 +67,12 @@ const DashboardLayout = () => {
       icon: Users,
       href: "/users",
       permission: "users:read",
+    },
+    {
+      name: "Referral Analytics",
+      icon: TrendingUp,
+      href: "/referral",
+      permission: "referrals:read",
     },
     {
       name: "Moderators",
@@ -79,12 +92,6 @@ const DashboardLayout = () => {
       icon: Settings,
       href: "/settings",
       permission: "admin:all",
-    },
-    {
-      name: "Daily Articles",
-      icon: FileText,
-      href: "/daily-articles",
-      permission: "posts:read",
     },
   ];
 
@@ -107,7 +114,7 @@ const DashboardLayout = () => {
         <Separator />
       </div>
       <ScrollArea className="flex-1 px-2">
-        <div className="space-y-2 py-2">
+        <div className="space-y-1 flex flex-col py-2">
           {navigation.map((item) => {
             if (item.permission && !hasPermission(item.permission)) return null;
 
@@ -118,7 +125,7 @@ const DashboardLayout = () => {
               <Link key={item.name} to={item.href}>
                 <Button
                   variant={isActive ? "secondary" : "ghost"}
-                  className={`w-full gap-2 ${
+                  className={`w-full gap-2 h-fit [&:hover>span]:text-indigo-800 hover:bg-primary/5 ${
                     isSidebarCollapsed
                       ? "px-2 justify-center"
                       : "px-4 justify-start"
@@ -126,7 +133,9 @@ const DashboardLayout = () => {
                 >
                   <Icon className="text-[#8884d8]" size={20} />
                   {!isSidebarCollapsed && (
-                    <span className="flex-1 text-left">{item.name}</span>
+                    <span className="flex-1 text-left opacity-80">
+                      {item.name}
+                    </span>
                   )}
                   {!isSidebarCollapsed && item.badge && (
                     <Badge variant="secondary">{item.badge}</Badge>
@@ -197,11 +206,14 @@ const DashboardLayout = () => {
               <React.Fragment key={breadcrumb.href}>
                 {index > 0 && (
                   // escape >
-                  <span className="mx-1 text-muted-foreground"> &gt;</span>
+                  <span className="mx-1 text-muted-foreground/80 font-bold">
+                    {" "}
+                    &gt;
+                  </span>
                 )}
                 <Link
                   to={breadcrumb.href}
-                  className={`text-sm ${
+                  className={`text-sm text-indigo-800/80 ${
                     breadcrumb.current
                       ? "text-foreground font-medium"
                       : "text-muted-foreground hover:text-foreground"
@@ -223,12 +235,12 @@ const DashboardLayout = () => {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
+                <Button variant="ghost" className="gap-2 text-indigo-800/80">
                   <User size={20} />
                   <span className="hidden md:inline">{user?.email}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="text-indigo-800">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -239,7 +251,10 @@ const DashboardLayout = () => {
                 </DropdownMenuItem>
                 {/* <DropdownMenuItem>Settings</DropdownMenuItem> */}
                 {/* <DropdownMenuSeparator /> */}
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-destructive"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </DropdownMenuItem>

@@ -22,6 +22,8 @@ import LoadingScreen from "./layouts/LoadingScreen";
 import UnauthorizedPage from "./pages/Unauthorized";
 import DailyArticlesPage from "./pages/articles/DailyArticlesPage";
 import ProfilePage from "./pages/profile/ProfilePage";
+import ReferralDashboard from "./pages/referral/ReferralDashboard";
+import UserReferralAnalytics from "./pages/referral/UserReferralAnalytics";
 
 const AuthContext = React.createContext<null | {
   user: any;
@@ -220,6 +222,24 @@ const App = () => {
                   element={
                     <ProtectedRoute requiredPermission="users:read">
                       <UsersListPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="referral"
+                  element={
+                    <ProtectedRoute requiredPermission="referrals:read">
+                      <ReferralDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="referral/:userId"
+                  element={
+                    <ProtectedRoute requiredPermission="referrals:read">
+                      <UserReferralAnalytics />
                     </ProtectedRoute>
                   }
                 />

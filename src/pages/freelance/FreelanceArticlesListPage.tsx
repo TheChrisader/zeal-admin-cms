@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { apiClient } from "@/lib/apiClient";
 import { useUrlState } from "@/hooks/useUrlState";
 import {
@@ -44,10 +45,32 @@ const FreelanceArticlesListPage = () => {
   }>("filters", {
     defaultState: {
       page: 1,
-      limit: 10,
+      limit: 5,
       search: "",
     },
   });
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
 
   const [inputValue, setInputValue] = useState(filters.search || "");
 
@@ -123,245 +146,214 @@ const FreelanceArticlesListPage = () => {
   const debouncedHandleSearch = useDebouncedCallback(handleSearch, 500);
 
   return (
-    <div className="space-y-6 p-4">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6 p-4"
+    >
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Freelance Articles</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage and moderate freelance submissions
-        </p>
-      </div>
+      <motion.div variants={itemVariants}>
+        <div>
+          <h1 className="text-3xl font-bold">Freelance Articles</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage and moderate freelance submissions
+          </p>
+        </div>
+      </motion.div>
 
       {/* Search Bar */}
-      <div className="flex flex-wrap gap-4">
-        <div className="flex-1 min-w-[200px]">
-          <Input
-            placeholder="Search articles..."
-            value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-              debouncedHandleSearch();
-            }}
-          />
+      <motion.div variants={itemVariants}>
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <Input
+              placeholder="Search articles..."
+              value={inputValue}
+              onChange={(e) => {
+                setInputValue(e.target.value);
+                debouncedHandleSearch();
+              }}
+            />
+          </div>
+          <div className="flex items-center">
+            <label htmlFor="limit" className="mr-2 whitespace-nowrap">
+              Items per page:
+            </label>
+            <select
+              id="limit"
+              value={limit}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  limit: Number(e.target.value),
+                  page: 1,
+                }))
+              }
+              className="p-2 border rounded"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
         </div>
-        <div className="flex items-center">
-          <label htmlFor="limit" className="mr-2 whitespace-nowrap">
-            Items per page:
-          </label>
-          <select
-            id="limit"
-            value={limit}
-            onChange={(e) =>
-              setFilters((prev) => ({
-                ...prev,
-                limit: Number(e.target.value),
-                page: 1,
-              }))
-            }
-            className="p-2 border rounded"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>
-        </div>
-      </div>
+      </motion.div>
 
       {/* Articles Table */}
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="w-full">
-              {[1, 2, 3, 4, 5].map((row) => (
-                <div
-                  key={row}
-                  className="flex items-center justify-between w-full gap-4 py-4 px-4 border-b"
-                >
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-9 w-16" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Author</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {posts?.map((article: IDraft) => (
-                    <TableRow key={article.id}>
-                      <TableCell className="font-medium max-w-xs truncate">
-                        {article.title}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {article.display_name || 'Unknown'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {article.category && article.category.length > 0 ? (
-                            article.category.map((cat, index) => (
-                              <span
-                                key={index}
-                                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md"
-                              >
-                                {cat}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-gray-500 text-sm">No category</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {new Date(article.created_at).toLocaleString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link
-                          to={`/moderation/freelance/posts/${article.id}`}
-                          className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200"
-                        >
-                          View
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {posts?.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-center py-8 text-muted-foreground"
-                      >
-                        No freelance articles found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex flex-col items-center justify-between p-4 border-t">
-                  <div className="text-sm text-muted-foreground mb-4">
-                    Showing {(page - 1) * limit + 1} to{" "}
-                    {Math.min(page * limit, totalItems)} of {totalItems}{" "}
-                    articles
+      <motion.div
+        variants={itemVariants}
+        whileHover={{
+          y: -2,
+          boxShadow:
+            "0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)",
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
+        <Card className="border border-indigo-200 bg-gradient-to-br from-white to-gray-50/30 transition-all duration-300">
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="w-full">
+                {[1, 2, 3, 4, 5].map((row) => (
+                  <div
+                    key={row}
+                    className="flex items-center justify-between w-full gap-4 py-4 px-4 border-b"
+                  >
+                    <Skeleton className="h-4 w-1/4" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-9 w-16" />
                   </div>
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            if (page <= 1) return;
-                            e.preventDefault();
-                            setFilters((prev) => ({ ...prev, page: page - 1 }));
-                          }}
-                          className={
-                            page <= 1
-                              ? "pointer-events-none opacity-50"
-                              : "cursor-pointer"
-                          }
-                        />
-                      </PaginationItem>
-
-                      {/* Show first page */}
-                      {page > 2 && (
-                        <>
-                          <PaginationItem>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setFilters((prev) => ({ ...prev, page: 1 }));
-                              }}
-                            >
-                              1
-                            </PaginationLink>
-                          </PaginationItem>
-                          {page > 3 && (
-                            <PaginationItem>
-                              <span className="px-3 py-2 text-muted-foreground">
-                                ...
+                ))}
+              </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Author</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Created At</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {posts?.map((article: IDraft) => (
+                      <TableRow key={article.id}>
+                        <TableCell className="font-medium text-indigo-700/80 max-w-xs truncate">
+                          {article.title}
+                        </TableCell>
+                        <TableCell className="font-medium opacity-90">
+                          {article.display_name || "Unknown"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {article.category && article.category.length > 0 ? (
+                              article.category.map((cat, index) => (
+                                <span
+                                  key={index}
+                                  className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md"
+                                >
+                                  {cat}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-gray-500 text-sm">
+                                No category
                               </span>
-                            </PaginationItem>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {new Date(article.created_at).toLocaleString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
                           )}
-                        </>
-                      )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link
+                            to={`/moderation/freelance/posts/${article.id}`}
+                            className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200"
+                          >
+                            View
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {posts?.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={5}
+                          className="text-center py-8 text-muted-foreground"
+                        >
+                          No freelance articles found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
 
-                      {/* Show previous page */}
-                      {page > 1 && (
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col items-center justify-between p-4 border-t">
+                    <div className="text-sm text-muted-foreground mb-4">
+                      Showing {(page - 1) * limit + 1} to{" "}
+                      {Math.min(page * limit, totalItems)} of {totalItems}{" "}
+                      articles
+                    </div>
+                    <Pagination>
+                      <PaginationContent>
                         <PaginationItem>
-                          <PaginationLink
+                          <PaginationPrevious
                             href="#"
                             onClick={(e) => {
+                              if (page <= 1) return;
                               e.preventDefault();
                               setFilters((prev) => ({
                                 ...prev,
                                 page: page - 1,
                               }));
                             }}
-                          >
-                            {page - 1}
-                          </PaginationLink>
+                            className={
+                              page <= 1
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
                         </PaginationItem>
-                      )}
 
-                      {/* Show current page */}
-                      <PaginationItem>
-                        <PaginationLink
-                          href="#"
-                          isActive
-                          onClick={(e) => {
-                            e.preventDefault();
-                          }}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-
-                      {/* Show next page */}
-                      {page < totalPages && (
-                        <PaginationItem>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setFilters((prev) => ({
-                                ...prev,
-                                page: page + 1,
-                              }));
-                            }}
-                          >
-                            {page + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )}
-
-                      {/* Show last page */}
-                      {page < totalPages - 1 && (
-                        <>
-                          {page < totalPages - 2 && (
+                        {/* Show first page */}
+                        {page > 2 && (
+                          <>
                             <PaginationItem>
-                              <span className="px-3 py-2 text-muted-foreground">
-                                ...
-                              </span>
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setFilters((prev) => ({ ...prev, page: 1 }));
+                                }}
+                              >
+                                1
+                              </PaginationLink>
                             </PaginationItem>
-                          )}
+                            {page > 3 && (
+                              <PaginationItem>
+                                <span className="px-3 py-2 text-muted-foreground">
+                                  ...
+                                </span>
+                              </PaginationItem>
+                            )}
+                          </>
+                        )}
+
+                        {/* Show previous page */}
+                        {page > 1 && (
                           <PaginationItem>
                             <PaginationLink
                               href="#"
@@ -369,40 +361,101 @@ const FreelanceArticlesListPage = () => {
                                 e.preventDefault();
                                 setFilters((prev) => ({
                                   ...prev,
-                                  page: totalPages,
+                                  page: page - 1,
                                 }));
                               }}
                             >
-                              {totalPages}
+                              {page - 1}
                             </PaginationLink>
                           </PaginationItem>
-                        </>
-                      )}
+                        )}
 
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            if (page >= totalPages) return;
-                            e.preventDefault();
-                            setFilters((prev) => ({ ...prev, page: page + 1 }));
-                          }}
-                          className={
-                            page >= totalPages
-                              ? "pointer-events-none opacity-50"
-                              : "cursor-pointer"
-                          }
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                        {/* Show current page */}
+                        <PaginationItem>
+                          <PaginationLink
+                            href="#"
+                            isActive
+                            onClick={(e) => {
+                              e.preventDefault();
+                            }}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+
+                        {/* Show next page */}
+                        {page < totalPages && (
+                          <PaginationItem>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setFilters((prev) => ({
+                                  ...prev,
+                                  page: page + 1,
+                                }));
+                              }}
+                            >
+                              {page + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
+
+                        {/* Show last page */}
+                        {page < totalPages - 1 && (
+                          <>
+                            {page < totalPages - 2 && (
+                              <PaginationItem>
+                                <span className="px-3 py-2 text-muted-foreground">
+                                  ...
+                                </span>
+                              </PaginationItem>
+                            )}
+                            <PaginationItem>
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    page: totalPages,
+                                  }));
+                                }}
+                              >
+                                {totalPages}
+                              </PaginationLink>
+                            </PaginationItem>
+                          </>
+                        )}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                              if (page >= totalPages) return;
+                              e.preventDefault();
+                              setFilters((prev) => ({
+                                ...prev,
+                                page: page + 1,
+                              }));
+                            }}
+                            className={
+                              page >= totalPages
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 };
 

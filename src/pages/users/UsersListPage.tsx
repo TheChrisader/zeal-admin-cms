@@ -34,7 +34,7 @@ import { UserForm, type UserFormValues } from "@/components/custom/user-form";
 import { mockUsers, type IUser, type UserRole } from "@/types/user";
 import { WriterRequests } from "@/components/custom/writer-requests";
 import { apiClient } from "@/lib/apiClient";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Pagination,
   PaginationContent,
@@ -113,18 +113,8 @@ export default function UsersPage() {
     queryKey: ["users", filters],
     queryFn: () => fetchUsers(filters),
   });
-  console.log(data);
 
   const { users = [], pagination } = data || {};
-  console.log(users);
-
-  const filteredUsers = users?.filter((user) => {
-    const matchesSearch =
-      user.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
 
   const handleAddUser = (data: UserFormValues) => {
     const newUser: IUser = {
@@ -149,26 +139,27 @@ export default function UsersPage() {
   const handleEditUser = (data: UserFormValues) => {
     if (!selectedUser) return;
     queryClient.invalidateQueries({ queryKey: ["users"] });
-    const updatedUsers = users.map((user) =>
-      user.id === selectedUser.id
-        ? {
-            ...user,
-            ...data,
-            updated_at: new Date(),
-          }
-        : user
-    );
-    // setUsers(updatedUsers);
     setIsEditDialogOpen(false);
     setSelectedUser(null);
   };
 
+  const deleteUsersMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await apiClient("/api/v1/admin/bulk/users", {
+        method: "DELETE",
+        body: JSON.stringify({ ids }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setIsDeleteDialogOpen(false);
+      setSelectedUser(null);
+    },
+  });
+
   const handleDeleteUser = () => {
     if (!selectedUser) return;
-    const updatedUsers = users.filter((user) => user.id !== selectedUser.id);
-    // setUsers(updatedUsers);
-    setIsDeleteDialogOpen(false);
-    setSelectedUser(null);
+    deleteUsersMutation.mutate([selectedUser._id]);
   };
 
   const handleApproveWriter = async (userId: string) => {
@@ -310,10 +301,10 @@ export default function UsersPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-indigo-800/90">
                             {user.display_name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-indigo-900/60">
                             {user.username}
                           </div>
                         </div>
