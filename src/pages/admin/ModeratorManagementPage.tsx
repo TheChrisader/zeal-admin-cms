@@ -156,7 +156,10 @@ const ModeratorManagement = () => {
       animate="visible"
       className="p-4 space-y-4"
     >
-      <motion.div variants={itemVariants} className="flex justify-between items-center">
+      <motion.div
+        variants={itemVariants}
+        className="flex justify-between items-center"
+      >
         <h1 className="text-2xl font-bold">Moderator Management</h1>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
@@ -253,7 +256,10 @@ const ModeratorManagement = () => {
                     <Skeleton className="h-4 w-48" />
                     <div className="flex flex-wrap gap-2">
                       {[1, 2, 3].map((badge) => (
-                        <Skeleton key={badge} className="h-5 w-32 rounded-full" />
+                        <Skeleton
+                          key={badge}
+                          className="h-5 w-32 rounded-full"
+                        />
                       ))}
                     </div>
                   </div>
@@ -271,99 +277,100 @@ const ModeratorManagement = () => {
               transition={{ delay: index * 0.1 }}
               whileHover={{
                 y: -2,
-                boxShadow: "0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)",
+                boxShadow:
+                  "0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04)",
               }}
             >
               <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-3 pb-0">
-                <CardTitle className="text-lg font-medium">
-                  {moderator.name}
-                </CardTitle>
-                <EditModerator
-                  moderator={{
-                    id: moderator._id.toString(),
-                    name: moderator.name,
-                    email: moderator.email,
-                    permissions: moderator.permissions,
-                  }}
-                  handleFormSubmit={editMutation.mutate}
-                >
-                  <Button variant="ghost" size="icon">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </EditModerator>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">{moderator.email}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {moderator.permissions.find(
-                      (privilege) =>
-                        privilege.includes("users") ||
-                        privilege.includes("admin")
-                    ) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Manage Users
-                      </span>
-                    )}
-                    {moderator.permissions.find(
-                      (privilege) =>
-                        privilege.includes("post") ||
-                        privilege.includes("admin")
-                    ) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        Manage Posts
-                      </span>
-                    )}
-                    {moderator.permissions.find(
-                      (privilege) =>
-                        privilege.includes("freelance") ||
-                        privilege.includes("admin")
-                    ) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        Manage Freelancers
-                      </span>
-                    )}
-                    {moderator.permissions.find(
-                      (privilege) =>
-                        privilege.includes("moderator") ||
-                        privilege.includes("admin")
-                    ) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        Manage Moderators
-                      </span>
-                    )}
-                    {moderator.permissions.find(
-                      (privilege) =>
-                        privilege.includes("referral") ||
-                        privilege.includes("admin")
-                    ) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                        View Referral Analytics
-                      </span>
-                    )}
-                    {moderator.permissions.find(
-                      (privilege) =>
-                        privilege.includes("comment") ||
-                        privilege.includes("admin")
-                    ) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Approve Comments
-                      </span>
-                    )}
-                    {moderator.permissions.find(
-                      (privilege) =>
-                        privilege.includes("settings") ||
-                        privilege.includes("admin")
-                    ) && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Manage Settings
-                      </span>
-                    )}
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pt-3 pb-0">
+                  <CardTitle className="text-lg font-medium">
+                    {moderator.name}
+                  </CardTitle>
+                  <EditModerator
+                    moderator={{
+                      id: moderator._id.toString(),
+                      name: moderator.name,
+                      email: moderator.email,
+                      permissions: moderator.permissions,
+                    }}
+                    handleFormSubmit={editMutation.mutate}
+                  >
+                    <Button variant="ghost" size="icon">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </EditModerator>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">{moderator.email}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {moderator.permissions.find(
+                        (privilege) =>
+                          privilege.includes("users") ||
+                          privilege.includes("admin")
+                      ) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Manage Users
+                        </span>
+                      )}
+                      {moderator.permissions.find(
+                        (privilege) =>
+                          privilege.includes("post") ||
+                          privilege.includes("admin")
+                      ) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          Manage Posts
+                        </span>
+                      )}
+                      {moderator.permissions.find(
+                        (privilege) =>
+                          privilege.includes("freelance") ||
+                          privilege.includes("admin")
+                      ) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          Manage Freelancers
+                        </span>
+                      )}
+                      {moderator.permissions.find(
+                        (privilege) =>
+                          privilege.includes("moderator") ||
+                          privilege.includes("admin")
+                      ) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          Manage Moderators
+                        </span>
+                      )}
+                      {moderator.permissions.find(
+                        (privilege) =>
+                          privilege.includes("referrals") ||
+                          privilege.includes("admin")
+                      ) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                          View Referral Analytics
+                        </span>
+                      )}
+                      {moderator.permissions.find(
+                        (privilege) =>
+                          privilege.includes("comment") ||
+                          privilege.includes("admin")
+                      ) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Approve Comments
+                        </span>
+                      )}
+                      {moderator.permissions.find(
+                        (privilege) =>
+                          privilege.includes("settings") ||
+                          privilege.includes("admin")
+                      ) && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Manage Settings
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             </motion.div>
           ))}
         </motion.div>

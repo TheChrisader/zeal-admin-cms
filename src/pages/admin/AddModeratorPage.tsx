@@ -36,6 +36,7 @@ type RBACPrivilege =
   | "moderator:write"
   | "moderators:read"
   | "moderators:write"
+  | "referrals:read"
   | "admin:all";
 
 type FormData = {
@@ -68,6 +69,7 @@ const allPrivileges: RBACPrivilege[] = [
   "moderator:write",
   "moderators:read",
   "moderators:write",
+  "referrals:read",
   "admin:all",
 ];
 

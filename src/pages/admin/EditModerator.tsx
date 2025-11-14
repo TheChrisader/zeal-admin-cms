@@ -48,6 +48,7 @@ const permissions: Permission[] = [
   { value: "moderator:write", label: "Write Moderator" },
   { value: "moderators:read", label: "Read Moderators" },
   { value: "moderators:write", label: "Write Moderators" },
+  { value: "referrals:read", label: "Read Referrals" },
   { value: "admin:all", label: "Admin (All Permissions)" },
 ];
 
